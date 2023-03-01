@@ -1,5 +1,6 @@
-
 import pandas as pd
+import sys
+
 
 # Dead simple python script to get the processing attribution from an IF filename.
 
@@ -18,6 +19,7 @@ class BinaryConverter(object):
     def toBitSetFromBase36(base36String):
         bigInteger = int(base36String, 36)
         return BinaryConverter.toBitSet(bigInteger)
+
 
 class VersionOneFileNamer:
     VERSION = "1"
@@ -43,7 +45,7 @@ class FileNamerFactory:
     @staticmethod
     def getByVersion(version=None):
         if not version:
-            version = StaticSettings.DEFAULT_ID_VERISON
+            version = StaticSettings.DEFAULT_ID_VERSION
         if version == "1":
             return FileNamerFactory.versionOne
         raise Exception("There is no FileNamer implemented for specified version")
@@ -72,17 +74,24 @@ class ParseFilename(object):
         return FileNamerFactory.getByFilename(filename).parse_file_name(filename)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    processedImageId = "104001004E9B7800_dcId1_y1u6j5s"
-    print(ParseFilename.parse(processedImageId))
-    print(BinaryConverter.toBitSetFromBase36("y1u6j5s"))
+def get_feature_list(processedImageIdLocal):
+    encoded_tag = ParseFilename.parse(processedImageIdLocal)[2]
+    #print(BinaryConverter.toBitSetFromBase36(encoded_tag))
 
-    data = pd.read_csv(r'/home/davidholland/mirage/ExtractProcessingFeaturesFromFilename/src/main/resources'
-                        r'/featuremap_v1.csv')
+    data = pd.read_csv(StaticSettings.FEATURE_MAP_FILE_VERSION_1)
     df = pd.DataFrame(data)
 
-    indices = BinaryConverter.toBitSetFromBase36("y1u6j5s")
+    indices = BinaryConverter.toBitSetFromBase36(encoded_tag)
 
     for index in indices:
-        print (df.iloc[[index]]['feature'])
+        print(df.iloc[index]['feature'])
+
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("No filename specified.  Using example filename '104001004E9B7800_dcId1_y1u6j5s.tif'...")
+        processedImageId = "104001004E9B7800_dcId1_y1u6j5s"
+        get_feature_list(processedImageId)
+    else:
+        processedImageId = sys.argv[1].split('.')[0]  # remove file extension
+        get_feature_list(processedImageId)
