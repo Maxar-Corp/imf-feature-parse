@@ -13,6 +13,7 @@ Given an processed image file from Image Factory, we may want to know what proce
 python3 parse.py <filename>
 ```
 
+Note that the feature map csv file ("featuremap_v1.csv") must be present in the directory where you run the script.
 
 The filename should include an extension (e.g., 'tif', 'nitf')
 
